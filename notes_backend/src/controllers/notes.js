@@ -274,6 +274,74 @@ class NotesController {
    * Handle errors and send appropriate response
    * @private
    */
+  /**
+   * @swagger
+   * /api/notes/backup/{userId}:
+   *   post:
+   *     summary: Backup all notes for a user
+   *     description: Creates a backup file of all notes for the specified user and uploads it to Supabase Storage
+   *     tags: [Notes]
+   *     parameters:
+   *       - in: path
+   *         name: userId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *         description: The ID of the user whose notes to backup
+   *     responses:
+   *       200:
+   *         description: Backup created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: string
+   *                   example: success
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     filename:
+   *                       type: string
+   *                       example: notes_backup_1_2024-01-20T10-00-00.json
+   *                     url:
+   *                       type: string
+   *                       example: https://storage.url/notes-backup.json
+   *                     timestamp:
+   *                       type: string
+   *                       format: date-time
+   *                     note_count:
+   *                       type: integer
+   *                       example: 10
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
+   *       500:
+   *         $ref: '#/components/responses/ServerError'
+   */
+  async backupNotes(req, res) {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      if (!userId || userId <= 0) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Invalid user ID',
+          errors: ['User ID must be a positive integer']
+        });
+      }
+
+      const backupDetails = await notesService.backupNotes(userId);
+      res.json({
+        status: 'success',
+        data: backupDetails
+      });
+    } catch (error) {
+      this.handleError(error, res);
+    }
+  }
+
   handleError(error, res) {
     console.error('Error:', error);
     

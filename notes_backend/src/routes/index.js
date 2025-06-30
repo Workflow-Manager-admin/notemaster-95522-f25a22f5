@@ -11,6 +11,7 @@ router.get('/api/notes/user/:userId', notesController.getNotes.bind(notesControl
 router.get('/api/notes/:id', validateId, notesController.getNoteById.bind(notesController));
 router.put('/api/notes/:id', validateId, validateNote, notesController.updateNote.bind(notesController));
 router.delete('/api/notes/:id', validateId, notesController.deleteNote.bind(notesController));
+router.post('/api/notes/backup/:userId', notesController.backupNotes.bind(notesController));
 
 // Health endpoint
 /**

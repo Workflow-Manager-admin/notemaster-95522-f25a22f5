@@ -1,5 +1,6 @@
 const Note = require('../models/note');
 const { NotFoundError, DatabaseError } = require('../utils/errors');
+const supabase = require('../config/supabase');
 
 class NotesService {
   /**
@@ -113,6 +114,61 @@ class NotesService {
         throw error;
       }
       throw new DatabaseError('Failed to delete note: ' + error.message);
+    }
+  }
+
+  /**
+   * Export notes for a user and upload to Supabase Storage
+   * @param {number} userId - ID of the user
+   * @returns {Promise<Object>} Backup details including the URL
+   */
+  async backupNotes(userId) {
+    try {
+      // Get all notes for the user
+      const notes = await Note.findAll({
+        where: { user_id: userId },
+        order: [['updated_at', 'DESC']]
+      });
+
+      // Create backup data with metadata
+      const backupData = {
+        timestamp: new Date().toISOString(),
+        user_id: userId,
+        notes: notes.map(note => note.toJSON())
+      };
+
+      // Convert to JSON string
+      const backupContent = JSON.stringify(backupData, null, 2);
+
+      // Generate unique filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `notes_backup_${userId}_${timestamp}.json`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('notes-backups')
+        .upload(filename, backupContent, {
+          contentType: 'application/json',
+          cacheControl: '3600'
+        });
+
+      if (error) {
+        throw new DatabaseError('Failed to upload backup: ' + error.message);
+      }
+
+      // Get public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('notes-backups')
+        .getPublicUrl(filename);
+
+      return {
+        filename,
+        url: publicUrl,
+        timestamp: backupData.timestamp,
+        note_count: notes.length
+      };
+    } catch (error) {
+      throw new DatabaseError('Failed to backup notes: ' + error.message);
     }
   }
 }
