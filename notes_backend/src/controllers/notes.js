@@ -6,50 +6,34 @@ class NotesController {
    * /api/notes:
    *   post:
    *     summary: Create a new note
+   *     description: Creates a new note with the provided title, content, and user ID
    *     tags: [Notes]
    *     requestBody:
    *       required: true
    *       content:
    *         application/json:
    *           schema:
-   *             type: object
-   *             required:
-   *               - title
-   *               - content
-   *               - user_id
-   *             properties:
-   *               title:
-   *                 type: string
-   *                 minLength: 1
-   *                 maxLength: 200
-   *               content:
-   *                 type: string
-   *                 minLength: 1
-   *               user_id:
-   *                 type: integer
-   *                 minimum: 1
+   *             $ref: '#/components/schemas/Note'
    *     responses:
    *       201:
    *         description: Note created successfully
-   *       400:
-   *         description: Invalid request body
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 status:
-   *                   type: string
-   *                   example: error
-   *                 message:
-   *                   type: string
-   *                   example: Validation failed
-   *                 errors:
-   *                   type: array
-   *                   items:
-   *                     type: string
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               status: 'success'
+   *               data:
+   *                 id: 1
+   *                 title: 'Meeting Notes'
+   *                 content: 'Discuss project timeline'
+   *                 user_id: 1
+   *                 created_at: '2024-01-20T10:00:00.000Z'
+   *                 updated_at: '2024-01-20T10:00:00.000Z'
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
    *       500:
-   *         description: Server error
+   *         $ref: '#/components/responses/ServerError'
    */
   async createNote(req, res) {
     try {
@@ -68,6 +52,7 @@ class NotesController {
    * /api/notes/user/{userId}:
    *   get:
    *     summary: Get all notes for a user
+   *     description: Retrieves all notes belonging to the specified user ID, ordered by last update
    *     tags: [Notes]
    *     parameters:
    *       - in: path
@@ -76,13 +61,30 @@ class NotesController {
    *         schema:
    *           type: integer
    *           minimum: 1
+   *         description: The ID of the user whose notes to retrieve
    *     responses:
    *       200:
-   *         description: List of notes
+   *         description: List of notes retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               status: 'success'
+   *               data: [
+   *                 {
+   *                   id: 1,
+   *                   title: 'Meeting Notes',
+   *                   content: 'Discuss project timeline',
+   *                   user_id: 1,
+   *                   created_at: '2024-01-20T10:00:00.000Z',
+   *                   updated_at: '2024-01-20T10:00:00.000Z'
+   *                 }
+   *               ]
    *       400:
-   *         description: Invalid user ID
+   *         $ref: '#/components/responses/ValidationError'
    *       500:
-   *         description: Server error
+   *         $ref: '#/components/responses/ServerError'
    */
   async getNotes(req, res) {
     try {
@@ -101,6 +103,7 @@ class NotesController {
    * /api/notes/{id}:
    *   get:
    *     summary: Get a note by ID
+   *     description: Retrieves a specific note by its ID. The user must own the note to access it.
    *     tags: [Notes]
    *     parameters:
    *       - in: path
@@ -109,21 +112,36 @@ class NotesController {
    *         schema:
    *           type: integer
    *           minimum: 1
+   *         description: The ID of the note to retrieve
    *       - in: query
    *         name: userId
    *         required: true
    *         schema:
    *           type: integer
    *           minimum: 1
+   *         description: The ID of the user requesting the note
    *     responses:
    *       200:
-   *         description: Note details
+   *         description: Note retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               status: 'success'
+   *               data:
+   *                 id: 1
+   *                 title: 'Meeting Notes'
+   *                 content: 'Discuss project timeline'
+   *                 user_id: 1
+   *                 created_at: '2024-01-20T10:00:00.000Z'
+   *                 updated_at: '2024-01-20T10:00:00.000Z'
    *       400:
-   *         description: Invalid request parameters
+   *         $ref: '#/components/responses/ValidationError'
    *       404:
-   *         description: Note not found
+   *         $ref: '#/components/responses/NotFoundError'
    *       500:
-   *         description: Server error
+   *         $ref: '#/components/responses/ServerError'
    */
   async getNoteById(req, res) {
     try {
@@ -142,6 +160,7 @@ class NotesController {
    * /api/notes/{id}:
    *   put:
    *     summary: Update a note
+   *     description: Updates an existing note. The user must own the note to update it.
    *     tags: [Notes]
    *     parameters:
    *       - in: path
@@ -150,36 +169,35 @@ class NotesController {
    *         schema:
    *           type: integer
    *           minimum: 1
+   *         description: The ID of the note to update
    *     requestBody:
    *       required: true
    *       content:
    *         application/json:
    *           schema:
-   *             type: object
-   *             required:
-   *               - title
-   *               - content
-   *               - user_id
-   *             properties:
-   *               title:
-   *                 type: string
-   *                 minLength: 1
-   *                 maxLength: 200
-   *               content:
-   *                 type: string
-   *                 minLength: 1
-   *               user_id:
-   *                 type: integer
-   *                 minimum: 1
+   *             $ref: '#/components/schemas/Note'
    *     responses:
    *       200:
    *         description: Note updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               status: 'success'
+   *               data:
+   *                 id: 1
+   *                 title: 'Updated Meeting Notes'
+   *                 content: 'Updated project timeline'
+   *                 user_id: 1
+   *                 created_at: '2024-01-20T10:00:00.000Z'
+   *                 updated_at: '2024-01-20T11:00:00.000Z'
    *       400:
-   *         description: Invalid request parameters
+   *         $ref: '#/components/responses/ValidationError'
    *       404:
-   *         description: Note not found
+   *         $ref: '#/components/responses/NotFoundError'
    *       500:
-   *         description: Server error
+   *         $ref: '#/components/responses/ServerError'
    */
   async updateNote(req, res) {
     try {
@@ -202,6 +220,7 @@ class NotesController {
    * /api/notes/{id}:
    *   delete:
    *     summary: Delete a note
+   *     description: Deletes a specific note. The user must own the note to delete it.
    *     tags: [Notes]
    *     parameters:
    *       - in: path
@@ -210,21 +229,34 @@ class NotesController {
    *         schema:
    *           type: integer
    *           minimum: 1
+   *         description: The ID of the note to delete
    *       - in: query
    *         name: userId
    *         required: true
    *         schema:
    *           type: integer
    *           minimum: 1
+   *         description: The ID of the user requesting deletion
    *     responses:
    *       200:
    *         description: Note deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: string
+   *                   example: success
+   *                 message:
+   *                   type: string
+   *                   example: Note deleted successfully
    *       400:
-   *         description: Invalid request parameters
+   *         $ref: '#/components/responses/ValidationError'
    *       404:
-   *         description: Note not found
+   *         $ref: '#/components/responses/NotFoundError'
    *       500:
-   *         description: Server error
+   *         $ref: '#/components/responses/ServerError'
    */
   async deleteNote(req, res) {
     try {
