@@ -1,0 +1,48 @@
+
+> minimal-express-app@1.0.0 dev
+> nodemon src/server.js
+
+[33m[nodemon] 3.1.9[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): src/**/*[39m
+[33m[nodemon] watching extensions: js,json[39m
+[32m[nodemon] starting `node src/server.js`[39m
+Server running at http://0.0.0.0:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+Server running at http://0.0.0.0:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+Server running at http://0.0.0.0:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+Server running at http://0.0.0.0:3001
+Error synchronizing Note model: HostNotFoundError [SequelizeHostNotFoundError]: getaddrinfo ENOTFOUND mysql://localhost:5000/myapp
+    at ConnectionManager.connect (/home/kavia/workspace/code-generation/notemaster-95522-f25a22f5/notes_backend/node_modules/sequelize/lib/dialects/mysql/connection-manager.js:96:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async ConnectionManager._connect (/home/kavia/workspace/code-generation/notemaster-95522-f25a22f5/notes_backend/node_modules/sequelize/lib/dialects/abstract/connection-manager.js:222:24)
+    at async /home/kavia/workspace/code-generation/notemaster-95522-f25a22f5/notes_backend/node_modules/sequelize/lib/dialects/abstract/connection-manager.js:174:32
+    at async ConnectionManager.getConnection (/home/kavia/workspace/code-generation/notemaster-95522-f25a22f5/notes_backend/node_modules/sequelize/lib/dialects/abstract/connection-manager.js:197:7)
+    at async /home/kavia/workspace/code-generation/notemaster-95522-f25a22f5/notes_backend/node_modules/sequelize/lib/sequelize.js:305:26
+    at async MySQLQueryInterface.tableExists (/home/kavia/workspace/code-generation/notemaster-95522-f25a22f5/notes_backend/node_modules/sequelize/lib/dialects/abstract/query-interface.js:102:17)
+    at async Note.sync (/home/kavia/workspace/code-generation/notemaster-95522-f25a22f5/notes_backend/node_modules/sequelize/lib/model.js:939:21)
+    at async Sequelize.sync (/home/kavia/workspace/code-generation/notemaster-95522-f25a22f5/notes_backend/node_modules/sequelize/lib/sequelize.js:377:9) {
+  parent: Error: getaddrinfo ENOTFOUND mysql://localhost:5000/myapp
+      at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:107:26) {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'mysql://localhost:5000/myapp',
+    fatal: true
+  },
+  original: Error: getaddrinfo ENOTFOUND mysql://localhost:5000/myapp
+      at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:107:26) {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'mysql://localhost:5000/myapp',
+    fatal: true
+  }
+}

@@ -1,7 +1,16 @@
 const express = require('express');
 const healthController = require('../controllers/health');
+const notesController = require('../controllers/notes');
 
 const router = express.Router();
+
+// Notes endpoints
+router.post('/api/notes', notesController.createNote.bind(notesController));
+router.get('/api/notes/user/:userId', notesController.getNotes.bind(notesController));
+router.get('/api/notes/:id', notesController.getNoteById.bind(notesController));
+router.put('/api/notes/:id', notesController.updateNote.bind(notesController));
+router.delete('/api/notes/:id', notesController.deleteNote.bind(notesController));
+
 // Health endpoint
 
 /**
