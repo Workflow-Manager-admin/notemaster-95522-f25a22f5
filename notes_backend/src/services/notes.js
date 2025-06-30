@@ -1,4 +1,5 @@
 const Note = require('../models/note');
+const { NotFoundError, DatabaseError } = require('../utils/errors');
 
 class NotesService {
   /**
@@ -11,7 +12,10 @@ class NotesService {
       const note = await Note.create(noteData);
       return note;
     } catch (error) {
-      throw new Error('Error creating note: ' + error.message);
+      if (error.name === 'SequelizeValidationError') {
+        throw new ValidationError(error.message);
+      }
+      throw new DatabaseError('Failed to create note: ' + error.message);
     }
   }
 
@@ -28,7 +32,7 @@ class NotesService {
       });
       return notes;
     } catch (error) {
-      throw new Error('Error fetching notes: ' + error.message);
+      throw new DatabaseError('Failed to fetch notes: ' + error.message);
     }
   }
 
@@ -43,9 +47,17 @@ class NotesService {
       const note = await Note.findOne({
         where: { id: noteId, user_id: userId }
       });
+      
+      if (!note) {
+        throw new NotFoundError('Note not found');
+      }
+      
       return note;
     } catch (error) {
-      throw new Error('Error fetching note: ' + error.message);
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      throw new DatabaseError('Failed to fetch note: ' + error.message);
     }
   }
 
@@ -63,13 +75,19 @@ class NotesService {
       });
 
       if (!note) {
-        throw new Error('Note not found');
+        throw new NotFoundError('Note not found');
       }
 
-      await note.update(updateData);
-      return note;
+      const updatedNote = await note.update(updateData);
+      return updatedNote;
     } catch (error) {
-      throw new Error('Error updating note: ' + error.message);
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      if (error.name === 'SequelizeValidationError') {
+        throw new ValidationError(error.message);
+      }
+      throw new DatabaseError('Failed to update note: ' + error.message);
     }
   }
 
@@ -84,9 +102,17 @@ class NotesService {
       const deleted = await Note.destroy({
         where: { id: noteId, user_id: userId }
       });
-      return deleted > 0;
+      
+      if (deleted === 0) {
+        throw new NotFoundError('Note not found');
+      }
+      
+      return true;
     } catch (error) {
-      throw new Error('Error deleting note: ' + error.message);
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      throw new DatabaseError('Failed to delete note: ' + error.message);
     }
   }
 }

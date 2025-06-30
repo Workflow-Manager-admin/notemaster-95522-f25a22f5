@@ -20,24 +20,46 @@ class NotesController {
    *             properties:
    *               title:
    *                 type: string
+   *                 minLength: 1
+   *                 maxLength: 200
    *               content:
    *                 type: string
+   *                 minLength: 1
    *               user_id:
    *                 type: integer
+   *                 minimum: 1
    *     responses:
    *       201:
    *         description: Note created successfully
    *       400:
    *         description: Invalid request body
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: string
+   *                   example: error
+   *                 message:
+   *                   type: string
+   *                   example: Validation failed
+   *                 errors:
+   *                   type: array
+   *                   items:
+   *                     type: string
    *       500:
    *         description: Server error
    */
   async createNote(req, res) {
     try {
       const note = await notesService.createNote(req.body);
-      res.status(201).json(note);
+      res.status(201).json({
+        status: 'success',
+        data: note
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      this.handleError(error, res);
     }
   }
 
@@ -53,18 +75,24 @@ class NotesController {
    *         required: true
    *         schema:
    *           type: integer
+   *           minimum: 1
    *     responses:
    *       200:
    *         description: List of notes
+   *       400:
+   *         description: Invalid user ID
    *       500:
    *         description: Server error
    */
   async getNotes(req, res) {
     try {
-      const notes = await notesService.getNotesByUserId(req.params.userId);
-      res.json(notes);
+      const notes = await notesService.getNotesByUserId(parseInt(req.params.userId));
+      res.json({
+        status: 'success',
+        data: notes
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      this.handleError(error, res);
     }
   }
 
@@ -80,14 +108,18 @@ class NotesController {
    *         required: true
    *         schema:
    *           type: integer
+   *           minimum: 1
    *       - in: query
    *         name: userId
    *         required: true
    *         schema:
    *           type: integer
+   *           minimum: 1
    *     responses:
    *       200:
    *         description: Note details
+   *       400:
+   *         description: Invalid request parameters
    *       404:
    *         description: Note not found
    *       500:
@@ -96,12 +128,12 @@ class NotesController {
   async getNoteById(req, res) {
     try {
       const note = await notesService.getNoteById(req.params.id, req.query.userId);
-      if (!note) {
-        return res.status(404).json({ error: 'Note not found' });
-      }
-      res.json(note);
+      res.json({
+        status: 'success',
+        data: note
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      this.handleError(error, res);
     }
   }
 
@@ -117,6 +149,7 @@ class NotesController {
    *         required: true
    *         schema:
    *           type: integer
+   *           minimum: 1
    *     requestBody:
    *       required: true
    *       content:
@@ -130,13 +163,19 @@ class NotesController {
    *             properties:
    *               title:
    *                 type: string
+   *                 minLength: 1
+   *                 maxLength: 200
    *               content:
    *                 type: string
+   *                 minLength: 1
    *               user_id:
    *                 type: integer
+   *                 minimum: 1
    *     responses:
    *       200:
    *         description: Note updated successfully
+   *       400:
+   *         description: Invalid request parameters
    *       404:
    *         description: Note not found
    *       500:
@@ -149,12 +188,12 @@ class NotesController {
         req.body.user_id,
         req.body
       );
-      if (!note) {
-        return res.status(404).json({ error: 'Note not found' });
-      }
-      res.json(note);
+      res.json({
+        status: 'success',
+        data: note
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      this.handleError(error, res);
     }
   }
 
@@ -170,14 +209,18 @@ class NotesController {
    *         required: true
    *         schema:
    *           type: integer
+   *           minimum: 1
    *       - in: query
    *         name: userId
    *         required: true
    *         schema:
    *           type: integer
+   *           minimum: 1
    *     responses:
    *       200:
    *         description: Note deleted successfully
+   *       400:
+   *         description: Invalid request parameters
    *       404:
    *         description: Note not found
    *       500:
@@ -185,13 +228,43 @@ class NotesController {
    */
   async deleteNote(req, res) {
     try {
-      const deleted = await notesService.deleteNote(req.params.id, req.query.userId);
-      if (!deleted) {
-        return res.status(404).json({ error: 'Note not found' });
-      }
-      res.json({ message: 'Note deleted successfully' });
+      await notesService.deleteNote(req.params.id, req.query.userId);
+      res.json({
+        status: 'success',
+        message: 'Note deleted successfully'
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Handle errors and send appropriate response
+   * @private
+   */
+  handleError(error, res) {
+    console.error('Error:', error);
+    
+    const errorResponse = {
+      status: 'error',
+      message: error.message
+    };
+
+    switch (error.name) {
+      case 'ValidationError':
+        res.status(400).json(errorResponse);
+        break;
+      case 'NotFoundError':
+        res.status(404).json(errorResponse);
+        break;
+      case 'DatabaseError':
+        res.status(500).json(errorResponse);
+        break;
+      default:
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
     }
   }
 }
